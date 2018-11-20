@@ -14,6 +14,7 @@ import pl.plusliga.model.League;
 import pl.plusliga.model.Player;
 import pl.plusliga.model.PlayerGame;
 import pl.plusliga.model.PlayerGameKey;
+import pl.plusliga.model.Team;
 
 public class DataprojectPlayerGameParser implements JsoupParser<PlayerGame> {
 	protected static Pattern TEAM_ID_PATTERN = Pattern.compile(".*/teams/id/(\\d+).html");
@@ -75,7 +76,8 @@ public class DataprojectPlayerGameParser implements JsoupParser<PlayerGame> {
 	}
 	
 	public static void main(String args[]) {
-		List<Player> players = new PlpsPlayerParser().getEntities(League.PLUSLIGA.getPlayersUrl());
+		List<Team> teams = new PlpsTeamParser(League.PLUSLIGA).getEntities(League.PLUSLIGA.getTeamsUrl());
+		List<Player> players = new PlpsPlayerParser(teams).getEntities(League.PLUSLIGA.getPlayersUrl());
 		List<PlayerGame> games = new DataprojectPlayerGameParser(players, 27669).getEntities("http://pls-web.dataproject.com/MatchStatistics.aspx?mID=27669&ID=1052");
 		games.forEach(System.out::println);
 	}

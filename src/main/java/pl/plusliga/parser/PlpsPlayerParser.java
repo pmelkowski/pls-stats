@@ -2,19 +2,29 @@ package pl.plusliga.parser;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import pl.plusliga.model.League;
 import pl.plusliga.model.Player;
+import pl.plusliga.model.Team;
 
 public class PlpsPlayerParser implements JsoupParser<Player> {
 	protected static Pattern PLAYER_ID_PATTERN = Pattern.compile(".*/id/(\\d+)\\.html");
 	protected static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
-	
+
+	protected final Set<Integer> teamIds;
+
+	public PlpsPlayerParser(Collection<Team> teams) {
+	    teamIds = teams.stream().map(Team::getId).collect(Collectors.toSet());
+	}
+
 	@Override
 	public Player getEntity(Element element) {
 		Player player = new Player();
@@ -46,7 +56,11 @@ public class PlpsPlayerParser implements JsoupParser<Player> {
 		}
 
 		player.setBirthDate(getDate(rows.get(1).select("div > div.datainfo > span").first().text(), DATE_FORMAT));
-		player.setTeams(new PlpsPlayerTeamParser(player).getEntities(element, "div.pagecontent > table > tbody > tr", row -> row.child(0).tagName().equals("td")));
+		player.setTeams(new PlpsPlayerTeamParser(player)
+			.getEntities(element, "div.pagecontent > table > tbody > tr", row -> row.child(0).tagName().equals("td")).stream()
+			.filter(team -> teamIds.contains(team.getKey().getTeamId()))
+			.collect(Collectors.toList())
+		);
 
 		if (player.getId() == null) {
 			throw new RuntimeException("No id: " + player.getName());
@@ -60,7 +74,8 @@ public class PlpsPlayerParser implements JsoupParser<Player> {
 	}
 	
 	public static void main(String args[]) {
-		Player player = new PlpsPlayerParser().getEntity("http://www.orlenliga.pl/players/id/85775.html");
+		List<Team> teams = new PlpsTeamParser(League.ORLENLIGA).getEntities(League.ORLENLIGA.getTeamsUrl());
+		Player player = new PlpsPlayerParser(teams).getEntity("http://www.orlenliga.pl/players/id/85775.html");
 		System.out.println(player);
 	}
 	
