@@ -39,17 +39,17 @@ public class ParserFactory {
 
     @SuppressWarnings("unchecked")
     public static <T> JsoupParser<T> getParser(League league, Class<T> clazz, Object... args) {
-	Class<? extends JsoupParser<T>> parserClass = (Class<? extends JsoupParser<T>>) Optional.ofNullable(PARSER_MAP.get(league))
-		.map(classMap -> classMap.get(clazz))
-		.orElseThrow(() -> new IllegalArgumentException("No parser for league/class: " + league + " / " + clazz.getName()));
-	try {
-	    return parserClass.getConstructor(Stream.of(args)
-		    .map(arg -> (arg instanceof Collection) ? Collection.class : arg.getClass())
-		    .toArray(Class[]::new))
-		.newInstance(args);
-	} catch (Exception e) {
-	    throw new IllegalArgumentException(e);
-	}
+		Class<? extends JsoupParser<T>> parserClass = (Class<? extends JsoupParser<T>>) Optional.ofNullable(PARSER_MAP.get(league))
+			.map(classMap -> classMap.get(clazz))
+			.orElseThrow(() -> new IllegalArgumentException("No parser for league/class: " + league + " / " + clazz.getName()));
+		try {
+		    return parserClass.getConstructor(Stream.of(args)
+			    .map(arg -> (arg instanceof Collection) ? Collection.class : arg.getClass())
+			    .toArray(Class[]::new))
+			.newInstance(args);
+		} catch (Exception e) {
+		    throw new IllegalArgumentException(e);
+		}
     }
 
 }
