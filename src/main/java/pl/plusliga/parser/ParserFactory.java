@@ -3,6 +3,7 @@ package pl.plusliga.parser;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,21 +39,16 @@ public class ParserFactory {
 
     @SuppressWarnings("unchecked")
     public static <T> JsoupParser<T> getParser(League league, Class<T> clazz, Object... args) {
-	if (!PARSER_MAP.containsKey(league)) {
-	    throw new UnsupportedOperationException("Unsupported league: " + league);
-	}
-	Class<? extends JsoupParser<T>> parserClass = (Class<? extends JsoupParser<T>>) PARSER_MAP.get(league).get(clazz);
-	if (parserClass == null) {
-	    throw new UnsupportedOperationException("Unsupported class: " + clazz.getName());
-	}
-
+	Class<? extends JsoupParser<T>> parserClass = (Class<? extends JsoupParser<T>>) Optional.ofNullable(PARSER_MAP.get(league))
+		.map(classMap -> classMap.get(clazz))
+		.orElseThrow(() -> new IllegalArgumentException("No parser for league/class: " + league + " / " + clazz.getName()));
 	try {
 	    return parserClass.getConstructor(Stream.of(args)
 		    .map(arg -> (arg instanceof Collection) ? Collection.class : arg.getClass())
 		    .toArray(Class[]::new))
 		.newInstance(args);
 	} catch (Exception e) {
-	    throw new UnsupportedOperationException(e);
+	    throw new IllegalArgumentException(e);
 	}
     }
 
