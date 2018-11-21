@@ -1,4 +1,4 @@
-package pl.plusliga.parser;
+package pl.plusliga.parser.pls;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,6 +11,7 @@ import pl.plusliga.model.Player;
 import pl.plusliga.model.PlayerTeam;
 import pl.plusliga.model.PlayerTeamKey;
 import pl.plusliga.model.Position;
+import pl.plusliga.parser.JsoupParser;
 
 public class PlpsPlayerTeamParser implements JsoupParser<PlayerTeam> {
 	protected static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");

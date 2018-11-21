@@ -1,4 +1,4 @@
-package pl.plusliga.parser;
+package pl.plusliga.parser.pls;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -14,6 +14,7 @@ import org.jsoup.select.Elements;
 import pl.plusliga.model.League;
 import pl.plusliga.model.Player;
 import pl.plusliga.model.Team;
+import pl.plusliga.parser.JsoupParser;
 
 public class PlpsPlayerParser implements JsoupParser<Player> {
 	protected static Pattern PLAYER_ID_PATTERN = Pattern.compile(".*/id/(\\d+)\\.html");

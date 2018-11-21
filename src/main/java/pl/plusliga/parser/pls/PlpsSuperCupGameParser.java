@@ -1,4 +1,4 @@
-package pl.plusliga.parser;
+package pl.plusliga.parser.pls;
 
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 import pl.plusliga.model.Game;
 import pl.plusliga.model.League;
 import pl.plusliga.model.Team;
+import pl.plusliga.parser.JsoupParser;
 
 public class PlpsSuperCupGameParser implements JsoupParser<Game> {
 	

@@ -1,4 +1,4 @@
-package pl.plusliga.parser;
+package pl.plusliga.parser.pls;
 
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -15,6 +15,7 @@ import pl.plusliga.model.Player;
 import pl.plusliga.model.PlayerGame;
 import pl.plusliga.model.PlayerGameKey;
 import pl.plusliga.model.Team;
+import pl.plusliga.parser.JsoupParser;
 
 public class DataprojectPlayerGameParser implements JsoupParser<PlayerGame> {
 	protected static Pattern TEAM_ID_PATTERN = Pattern.compile(".*/teams/id/(\\d+).html");
@@ -32,9 +33,6 @@ public class DataprojectPlayerGameParser implements JsoupParser<PlayerGame> {
 	@Override
 	public PlayerGame getEntity(Element element) {
         String playerName = element.getElementById("PlayerName").text().replace(" (L)", "");
-        if (playerName.equals("Szumera")) {
-        	playerName = "Szumera Wiktoria";
-        }
         Integer playerId = playerIds.get(playerName);
         if (playerId == null) {
         	System.err.println(playerName);

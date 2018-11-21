@@ -1,4 +1,4 @@
-package pl.plusliga.parser;
+package pl.plusliga.parser.pls;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -7,6 +7,7 @@ import org.jsoup.nodes.Element;
 
 import pl.plusliga.model.League;
 import pl.plusliga.model.Team;
+import pl.plusliga.parser.JsoupParser;
 
 public class PlpsTeamParser implements JsoupParser<Team> {
 	protected static Pattern TEAM_ID_PATTERN = Pattern.compile(".*/teams/id/(\\d+).html");

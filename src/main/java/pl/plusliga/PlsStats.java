@@ -1,7 +1,6 @@
 package pl.plusliga;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
@@ -19,17 +18,15 @@ import pl.plusliga.model.Game;
 import pl.plusliga.model.GameRepository;
 import pl.plusliga.model.League;
 import pl.plusliga.model.Player;
+import pl.plusliga.model.PlayerGame;
 import pl.plusliga.model.PlayerGameRepository;
 import pl.plusliga.model.PlayerRepository;
 import pl.plusliga.model.Position;
 import pl.plusliga.model.Team;
 import pl.plusliga.model.TeamRepository;
-import pl.plusliga.parser.DataprojectPlayerGameParser;
-import pl.plusliga.parser.PlpsCupGameParser;
-import pl.plusliga.parser.PlpsGameParser;
-import pl.plusliga.parser.PlpsPlayerParser;
-import pl.plusliga.parser.PlpsSuperCupGameParser;
-import pl.plusliga.parser.PlpsTeamParser;
+import pl.plusliga.parser.ParserFactory;
+import pl.plusliga.parser.pls.PlpsCupGameParser;
+import pl.plusliga.parser.pls.PlpsSuperCupGameParser;
 
 @SpringBootApplication
 @ComponentScan
@@ -37,7 +34,7 @@ import pl.plusliga.parser.PlpsTeamParser;
 public class PlsStats {
 
  	public static void main(String[] args) {
-		SpringApplication.run(PlsStats.class, League.PLUSLIGA.toString());
+		SpringApplication.run(PlsStats.class, League.ORLENLIGA.toString());
 	}
 
 	@Bean
@@ -46,8 +43,7 @@ public class PlsStats {
 			League league = League.valueOf(args[0]);
 
 			updateDatabase(league, teams, players, games);
-			List<Game> recentGames = games.findByDateGreaterThanOrderByDate(Date.from(
-				LocalDate.now().minusMonths(2).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+			List<Game> recentGames = games.findByDateGreaterThanOrderByDate(Date.from(ZonedDateTime.now().minusMonths(2).toInstant()));
 			updateGames(league, players, playerGames, recentGames);
 
 			players.findAll().stream()
@@ -75,20 +71,30 @@ public class PlsStats {
 	}
 
 	protected void updateDatabase(League league, TeamRepository teams, PlayerRepository players, GameRepository games) {
-		List<Team> teamList = teams.saveAll(new PlpsTeamParser(league).getEntities(league.getTeamsUrl()));
-		players.saveAll(new PlpsPlayerParser(teamList).getEntities(league.getPlayersUrl()));
-		games.saveAll(new PlpsGameParser().getEntities(league.getGamesUrl()));
-		games.saveAll(new PlpsCupGameParser(teamList).getEntities(league.getCupGamesUrl()));
-		games.saveAll(new PlpsSuperCupGameParser(teamList).getEntities(league.getSuperCupGameUrl()));
+		List<Team> leagueTeams = teams.saveAll(ParserFactory.getParser(league, Team.class, league)
+			.getEntities(league.getTeamsUrl()));
+		players.saveAll(ParserFactory.getParser(league, Player.class, leagueTeams)
+			.getEntities(league.getPlayersUrl()));
+		games.saveAll(ParserFactory.getParser(league, Game.class).getEntities(league.getGamesUrl()));
+		
+		switch (league) {
+		case ORLENLIGA:
+		case PLUSLIGA:
+			games.saveAll(new PlpsCupGameParser(leagueTeams).getEntities(league.getCupGamesUrl()));
+			games.saveAll(new PlpsSuperCupGameParser(leagueTeams).getEntities(league.getSuperCupGameUrl()));
+			break;
+		default:
+			break;
+		}
 	}
 
 	protected void updateGames(League league, PlayerRepository players, PlayerGameRepository playerGames, List<Game> gameList) {
-		List<Player> playerList = players.findAll();
+		List<Player> allPlayers = players.findAll();
 		gameList.stream()
-		.filter(game -> game.isFrom(league))
-		.filter(game -> playerGames.findByKeyGameId(game.getId()).isEmpty())
+			.filter(game -> game.isFrom(league))
+			.filter(game -> playerGames.findByKeyGameId(game.getId()).isEmpty())
 			.peek(System.out::println)
-			.map(game -> new DataprojectPlayerGameParser(playerList, game.getId()).getEntities(game.getStatsUrl()))
+			.map(game -> ParserFactory.getParser(league, PlayerGame.class, allPlayers, game.getId()).getEntities(game.getStatsUrl()))
 			.forEach(playerGames::saveAll);
 	}
 
