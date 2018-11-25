@@ -63,6 +63,14 @@ public class PlsStats {
     players.deleteAll();
   }
 
+  protected void deleteGamesFromDate(GameRepository games, PlayerGameRepository playerGames,
+      Date start) {
+    games.findByDateGreaterThanOrderByDate(start).stream()
+        .peek(game -> System.out.println("deleting: " + game))
+        .map(Game::getId)
+        .forEach(gameId -> deleteGame(games, playerGames, gameId));
+  }
+
   protected void deleteGame(GameRepository games, PlayerGameRepository playerGames,
       Integer gameId) {
     playerGames.deleteAll(playerGames.findByKeyGameId(gameId));
