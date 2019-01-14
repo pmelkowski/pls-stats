@@ -13,9 +13,11 @@ import pl.plusliga.model.PlayerGame;
 import pl.plusliga.model.PlayerTeam;
 import pl.plusliga.model.Team;
 import pl.plusliga.parser.pls.DataprojectPlayerGameParser;
+import pl.plusliga.parser.pls.PlpsCupGameParser;
 import pl.plusliga.parser.pls.PlpsGameParser;
 import pl.plusliga.parser.pls.PlpsPlayerParser;
 import pl.plusliga.parser.pls.PlpsPlayerTeamParser;
+import pl.plusliga.parser.pls.PlpsSuperCupGameParser;
 import pl.plusliga.parser.pls.PlpsTeamParser;
 
 public class ParserFactory {
@@ -49,6 +51,26 @@ public class ParserFactory {
           .toArray(Class[]::new)).newInstance(args);
     } catch (Exception e) {
       throw new IllegalArgumentException(e);
+    }
+  }
+
+  public static Optional<JsoupParser<Game>> getCupGameParser(League league, Collection<Team> teams) {
+    switch (league) {
+      case ORLENLIGA:
+      case PLUSLIGA:
+        return Optional.of(new PlpsCupGameParser(teams));
+      default:
+        return Optional.empty();
+    }
+  }
+
+  public static Optional<JsoupParser<Game>> getSuperCupGameParser(League league, Collection<Team> teams) {
+    switch (league) {
+      case ORLENLIGA:
+      case PLUSLIGA:
+        return Optional.of(new PlpsSuperCupGameParser(teams));
+      default:
+        return Optional.empty();
     }
   }
 

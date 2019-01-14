@@ -22,8 +22,6 @@ import pl.plusliga.model.Position;
 import pl.plusliga.model.Team;
 import pl.plusliga.model.TeamRepository;
 import pl.plusliga.parser.ParserFactory;
-import pl.plusliga.parser.pls.PlpsCupGameParser;
-import pl.plusliga.parser.pls.PlpsSuperCupGameParser;
 
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "pl.plusliga.model")
@@ -84,17 +82,10 @@ public class PlsStats {
     players.saveAll(ParserFactory.getParser(league, Player.class, leagueTeams)
         .getEntities(league.getPlayersUrl()));
     games.saveAll(ParserFactory.getParser(league, Game.class).getEntities(league.getGamesUrl()));
-
-    switch (league) {
-      case ORLENLIGA:
-      case PLUSLIGA:
-        games.saveAll(new PlpsCupGameParser(leagueTeams).getEntities(league.getCupGamesUrl()));
-        games.saveAll(
-            new PlpsSuperCupGameParser(leagueTeams).getEntities(league.getSuperCupGameUrl()));
-        break;
-      default:
-        break;
-    }
+    ParserFactory.getCupGameParser(league, leagueTeams)
+        .ifPresent(parser -> games.saveAll(parser.getEntities(league.getCupGamesUrl())));
+    ParserFactory.getSuperCupGameParser(league, leagueTeams)
+        .ifPresent(parser -> games.saveAll(parser.getEntities(league.getSuperCupGameUrl())));
   }
 
   protected void updateGames(League league, PlayerRepository players,
