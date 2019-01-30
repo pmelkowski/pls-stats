@@ -8,7 +8,7 @@ public enum League {
   ORLENLIGA("http://www.lsk.plps.pl/teams.html",
       "http://www.lsk.plps.pl/players.html?memo=%7B%22players%22%3A%7B%22mainFilter%22%3A%22letter%22%2C%22subFilter%22%3A%22all%22%7D%7D",
       "http://www.lsk.plps.pl/games.html?memo=%7B%22games%22%3A%7B%7D%7D",
-      "http://www.lsk.plps.pl/pcup/s/games/id/1030.html",
+      "http://www.lsk.pls.pl/pcup/s/games.html",
       "http://www.lsk.pls.pl/scup/s/game.html",
       Position.atakująca, Position.libero, Position.przyjmująca, Position.rozgrywająca,
       Position.środkowa),
