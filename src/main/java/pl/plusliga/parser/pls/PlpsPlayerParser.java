@@ -1,6 +1,6 @@
 package pl.plusliga.parser.pls;
 
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +16,7 @@ import pl.plusliga.parser.JsoupParser;
 
 public class PlpsPlayerParser implements JsoupParser<Player> {
   protected static Pattern PLAYER_ID_PATTERN = Pattern.compile(".*/id/(\\d+)\\.html");
-  protected static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
+  protected static DateTimeFormatter DATE_FORMAT = JsoupParser.buildDateTimeFormatter("dd.MM.yyyy");
 
   protected final Set<Integer> teamIds;
 
@@ -28,7 +28,7 @@ public class PlpsPlayerParser implements JsoupParser<Player> {
   public Player getEntity(Element element) {
     Player player = new Player();
 
-    player.setId(getInteger(element.baseUri(), PLAYER_ID_PATTERN, 1));
+    getInteger(element.baseUri(), PLAYER_ID_PATTERN, 1).ifPresent(player::setId);
 
     Elements rows = element.select("div.pagecontent > div.row > div > div.row");
 
@@ -54,8 +54,8 @@ public class PlpsPlayerParser implements JsoupParser<Player> {
         throw new RuntimeException("Unknown names: " + Arrays.asList(names));
     }
 
-    player.setBirthDate(
-        getDate(rows.get(1).select("div > div.datainfo > span").first().text(), DATE_FORMAT));
+    getDate(rows.get(1).select("div > div.datainfo > span").first().text(), DATE_FORMAT)
+        .ifPresent(player::setBirthDate);
     player.setTeams(new PlpsPlayerTeamParser(player)
         .getEntities(element, "div.pagecontent > table > tbody > tr",
             row -> row.child(0).tagName().equals("td"))

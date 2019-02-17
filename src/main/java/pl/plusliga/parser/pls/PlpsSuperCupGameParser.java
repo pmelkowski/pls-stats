@@ -1,6 +1,6 @@
 package pl.plusliga.parser.pls;
 
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +15,7 @@ import pl.plusliga.parser.JsoupParser;
 
 public class PlpsSuperCupGameParser implements JsoupParser<Game> {
 
-  protected static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
+  protected static DateTimeFormatter DATE_FORMAT = JsoupParser.buildDateTimeFormatter("dd.MM.yyyy HH:mm");
   protected static Pattern MATCH_ID_PATTERN = Pattern.compile(".*mID=(\\d+).*");
 
   private final Map<String, Integer> teamIds;
@@ -41,11 +41,13 @@ public class PlpsSuperCupGameParser implements JsoupParser<Game> {
       return null;
     }
 
-    game.setDate(getDate(element.select("div.team_score_pp > h3").text(), DATE_FORMAT));
+    getDate(element.select("div.team_score_pp > h3").text(), DATE_FORMAT)
+        .ifPresent(game::setDate);
     game.setHomeTeamId(teamIds.get(element.select("div.team_a_pp > h5").text()));
     game.setVisitorTeamId(teamIds.get(element.select("div.team_b_pp > h5").text()));
     game.setStatsUrl(element.select("div.team_score_pp > a").get(0).absUrl("href"));
-    game.setId(getInteger(game.getStatsUrl(), MATCH_ID_PATTERN, 1));
+    getInteger(game.getStatsUrl(), MATCH_ID_PATTERN, 1)
+        .ifPresent(game::setId);
 
     return game;
   }

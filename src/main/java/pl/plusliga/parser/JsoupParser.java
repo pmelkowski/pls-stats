@@ -1,12 +1,16 @@
 package pl.plusliga.parser;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,23 +64,28 @@ public interface JsoupParser<E> {
         .filter(entityPredicate).collect(Collectors.toList());
   }
 
-  default Integer getInteger(String text, Pattern pattern, int group) {
-    Matcher matcher = pattern.matcher(text);
-    if (matcher.matches()) {
-      return Integer.parseInt(matcher.group(group));
-    } else {
-      return null;
-    }
+  default Optional<Integer> getInteger(String text, Pattern pattern, int group) {
+    return Optional.ofNullable(text)
+        .map(pattern::matcher)
+        .filter(Matcher::matches)
+        .map(matcher -> matcher.group(group))
+        .map(Integer::parseInt);
   }
 
-  default Date getDate(String text, DateFormat format) {
-    if ((text == null) || text.isEmpty()) {
-      return null;
-    }
-    try {
-      return format.parse(text);
-    } catch (ParseException e) {
-      throw new RuntimeException(e);
-    }
+  static DateTimeFormatter buildDateTimeFormatter(String pattern) {
+    return new DateTimeFormatterBuilder().appendPattern(pattern)
+        .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+        .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+        .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+        .toFormatter();
   }
+
+  default Optional<Date> getDate(String text, DateTimeFormatter formatter) {
+    return Optional.ofNullable(text)
+        .filter(t -> !t.isEmpty())
+        .map(t -> LocalDateTime.parse(t, formatter))
+        .map(ldt -> ldt.toInstant(OffsetDateTime.now().getOffset()))
+        .map(Date::from);
+  }
+
 }

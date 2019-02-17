@@ -19,7 +19,7 @@ public class PlpsTeamParser implements JsoupParser<Team> {
   @Override
   public Team getEntity(Element element) {
     Team team = new Team();
-    team.setId(getInteger(element.absUrl("href"), TEAM_ID_PATTERN, 1));
+    getInteger(element.absUrl("href"), TEAM_ID_PATTERN, 1).ifPresent(team::setId);
     team.setName(element.text());
     team.setLeague(league);
     return team;
