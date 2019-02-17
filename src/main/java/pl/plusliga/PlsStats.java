@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -36,8 +37,8 @@ public class PlsStats {
       PlayerGameRepository playerGames) {
     return (args) -> {
       League league = League.valueOf(args[0]);
-
       updateDatabase(league, teams, players, games);
+
       List<Game> recentGames = games.findByDateGreaterThanOrderByDate(
           Date.from(ZonedDateTime.now().minusMonths(2).toInstant()));
       updateGames(league, players, playerGames, recentGames);
@@ -56,11 +57,13 @@ public class PlsStats {
     };
   }
 
+  @Transactional
   protected void purgeDatabase(PlayerRepository players, PlayerGameRepository playerGames) {
     playerGames.deleteAll();
     players.deleteAll();
   }
 
+  @Transactional
   protected void deleteGamesFromDate(GameRepository games, PlayerGameRepository playerGames,
       Date start) {
     games.findByDateGreaterThanOrderByDate(start).stream()
@@ -69,12 +72,14 @@ public class PlsStats {
         .forEach(gameId -> deleteGame(games, playerGames, gameId));
   }
 
+  @Transactional
   protected void deleteGame(GameRepository games, PlayerGameRepository playerGames,
       Integer gameId) {
     playerGames.deleteAll(playerGames.findByKeyGameId(gameId));
     games.deleteById(gameId);
   }
 
+  @Transactional
   protected void updateDatabase(League league, TeamRepository teams, PlayerRepository players,
       GameRepository games) {
     List<Team> leagueTeams = teams.saveAll(
@@ -88,6 +93,7 @@ public class PlsStats {
         .ifPresent(parser -> games.saveAll(parser.getEntities(league.getSuperCupGameUrl())));
   }
 
+  @Transactional
   protected void updateGames(League league, PlayerRepository players,
       PlayerGameRepository playerGames, List<Game> gameList) {
     List<Player> allPlayers = players.findAll();
