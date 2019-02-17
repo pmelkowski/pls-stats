@@ -32,7 +32,7 @@ public class PlayerTeam implements Comparable<PlayerTeam> {
   }
 
   public boolean isCurrent(Date date) {
-    return date.after(key.getDateFrom()) && date.before(dateTo);
+    return date.after(key.getDateFrom()) && (dateTo == null || date.before(dateTo));
   }
 
   public Team getTeam() {
