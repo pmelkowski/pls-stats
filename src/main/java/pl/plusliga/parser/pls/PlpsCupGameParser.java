@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jsoup.nodes.Element;
@@ -29,18 +30,10 @@ public class PlpsCupGameParser implements JsoupParser<Game> {
     game.setCup(true);
 
     Elements divs = element.select("div.row > div");
-
-    try {
-      game.setHomeScore(Integer.parseInt(divs.get(2).child(0).text()));
-      game.setVisitorScore(Integer.parseInt(divs.get(2).child(1).text()));
-    } catch (NumberFormatException e) {
-      System.err.println(divs.get(2));
-      return null;
-    }
-    if (!game.isComplete()) {
-      return null;
-    }
-
+    game.setHomeScore(
+        getInteger(divs.get(2).child(0), UnaryOperator.identity()).orElse(0));
+    game.setVisitorScore(
+        getInteger(divs.get(2).child(1), UnaryOperator.identity()).orElse(0));
     getDate(divs.get(0).select("span").text(), DATE_FORMAT)
         .ifPresent(game::setDate);
     game.setHomeTeamId(teamIds.get(divs.get(1).select("span").text()));
@@ -51,6 +44,10 @@ public class PlpsCupGameParser implements JsoupParser<Game> {
       getInteger(game.getStatsUrl(), MATCH_ID_PATTERN, 1).ifPresent(game::setId);
     }
 
+    if (!game.isComplete()) {
+      System.err.println(game);
+      return null;
+    }
     return game;
   }
 

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -60,8 +61,19 @@ public interface JsoupParser<E> {
 
   default List<E> getEntities(Element element, String cssQuery, Predicate<Element> elementPredicate,
       Predicate<E> entityPredicate) {
-    return element.select(cssQuery).stream().filter(elementPredicate).map(this::getEntity)
-        .filter(entityPredicate).collect(Collectors.toList());
+    return element.select(cssQuery).stream()
+        .filter(elementPredicate)
+        .map(this::getEntity)
+        .filter(entityPredicate)
+        .collect(Collectors.toList());
+  }
+
+  default Optional<Integer> getInteger(Element element, UnaryOperator<String> operator) {
+    return Optional.ofNullable(element)
+        .map(Element::text)
+        .map(operator)
+        .filter(t -> !t.isEmpty())
+        .map(Integer::parseInt);
   }
 
   default Optional<Integer> getInteger(String text, Pattern pattern, int group) {
@@ -69,6 +81,7 @@ public interface JsoupParser<E> {
         .map(pattern::matcher)
         .filter(Matcher::matches)
         .map(matcher -> matcher.group(group))
+        .filter(t -> !t.isEmpty())
         .map(Integer::parseInt);
   }
 

@@ -1,8 +1,10 @@
 package pl.plusliga.parser.pls;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Element;
 import pl.plusliga.model.Game;
@@ -20,8 +22,10 @@ public class PlpsGameParser implements JsoupParser<Game> {
     game.setCup(false);
 
     Element result = element.select("div.gameresult").first();
-    game.setHomeScore(Integer.parseInt(result.child(0).text()));
-    game.setVisitorScore(Integer.parseInt(result.child(2).text()));
+    getInteger(result.child(0), UnaryOperator.identity())
+        .ifPresent(game::setHomeScore);
+    getInteger(result.child(2), UnaryOperator.identity())
+        .ifPresent(game::setVisitorScore);
 
     getDate(element.select("div.date").text().replaceFirst("^\\D+", ""), DATE_FORMAT)
         .ifPresent(game::setDate);
@@ -31,11 +35,14 @@ public class PlpsGameParser implements JsoupParser<Game> {
         .ifPresent(game::setVisitorTeamId);
 
     game.setStatsUrl(element.select("a.btn").last().absUrl("href"));
-    getInteger(game.getStatsUrl(), MATCH_ID_PATTERN, 1).ifPresent(game::setId);
-    if (game.getId() == null) {
+    getInteger(game.getStatsUrl(), MATCH_ID_PATTERN, 1)
+        .ifPresent(game::setId);
+
+    if ((game.getId() == null) ||
+        (!game.isComplete() &&
+            ((game.getDate() == null) || game.getDate().before(new Date())))) {
       System.err.println(game);
     }
-
     return game;
   }
 
@@ -46,7 +53,8 @@ public class PlpsGameParser implements JsoupParser<Game> {
 
   public List<Game> getEntities(String url, Predicate<Game> predicate) {
     return getEntities(getDocument(url),
-        "div.faza > div.runda > div.kolejka > div.gameData > div.games", ALL_ELEMENTS, predicate);
+        "div#table-small > div > div.faza > div.runda > div.kolejka > div.gameData > div.games",
+        ALL_ELEMENTS, predicate);
   }
 
   public static void main(String args[]) {

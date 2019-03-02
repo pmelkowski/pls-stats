@@ -1,11 +1,8 @@
 package pl.plusliga.parser.pls;
 
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jsoup.nodes.Element;
 import pl.plusliga.model.League;
@@ -16,10 +13,6 @@ import pl.plusliga.model.Team;
 import pl.plusliga.parser.JsoupParser;
 
 public class DataprojectPlayerGameParser implements JsoupParser<PlayerGame> {
-  protected static Pattern TEAM_ID_PATTERN = Pattern.compile(".*/teams/id/(\\d+).html");
-  protected static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy, HH:mm");
-  protected static Pattern MATCH_ID_PATTERN = Pattern.compile(".*mID=(\\d+).*");
-
   private final Map<String, Integer> playerIds;
   private final Integer gameId;
 
@@ -60,18 +53,17 @@ public class DataprojectPlayerGameParser implements JsoupParser<PlayerGame> {
     }
     playerGame.setSets(setsPlayed);
 
-    playerGame
-        .setAces(Integer.parseInt(element.getElementById("ServeAce").text().replace('-', '0')));
-    playerGame
-        .setBlocks(Integer.parseInt(element.getElementById("BlockWin").text().replace('-', '0')));
-    playerGame
-        .setPoints(Integer.parseInt(element.getElementById("PointsTot").text().replace('-', '0'))
-            - playerGame.getAces() - playerGame.getBlocks());
-    playerGame
-        .setRecNumber(Integer.parseInt(element.getElementById("RecTot").text().replace('-', '0')));
-    Optional.ofNullable(element.getElementById("RecPos"))
-        .map(recPos -> Integer.parseInt(recPos.text().replace("%", "")))
-        .ifPresent(playerGame::setRecPct);
+    playerGame.setAces(
+        getInteger(element.getElementById("ServeAce"), text -> text.replace('-', '0')).orElse(0));
+    playerGame.setBlocks(
+        getInteger(element.getElementById("BlockWin"), text -> text.replace('-', '0')).orElse(0));
+    playerGame.setPoints(
+        getInteger(element.getElementById("PointsTot"), text -> text.replace('-', '0')).orElse(0)
+          - playerGame.getAces() - playerGame.getBlocks());
+    playerGame.setRecNumber(
+        getInteger(element.getElementById("RecTot"), text -> text.replace('-', '0')).orElse(0));
+    playerGame.setRecPct(
+        getInteger(element.getElementById("RecPos"), text -> text.replace("%", "")).orElse(0));
 
     return playerGame;
   }
