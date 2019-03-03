@@ -53,17 +53,17 @@ public class DataprojectPlayerGameParser implements JsoupParser<PlayerGame> {
     }
     playerGame.setSets(setsPlayed);
 
-    playerGame.setAces(
-        getInteger(element.getElementById("ServeAce"), text -> text.replace('-', '0')).orElse(0));
-    playerGame.setBlocks(
-        getInteger(element.getElementById("BlockWin"), text -> text.replace('-', '0')).orElse(0));
-    playerGame.setPoints(
-        getInteger(element.getElementById("PointsTot"), text -> text.replace('-', '0')).orElse(0)
-          - playerGame.getAces() - playerGame.getBlocks());
-    playerGame.setRecNumber(
-        getInteger(element.getElementById("RecTot"), text -> text.replace('-', '0')).orElse(0));
-    playerGame.setRecPct(
-        getInteger(element.getElementById("RecPos"), text -> text.replace("%", "")).orElse(0));
+    getInteger(element.getElementById("ServeAce"), text -> text.replace('-', '0'))
+        .ifPresent(playerGame::setAces);
+    getInteger(element.getElementById("BlockWin"), text -> text.replace('-', '0'))
+        .ifPresent(playerGame::setBlocks);
+    getInteger(element.getElementById("PointsTot"), text -> text.replace('-', '0'))
+        .map(points -> points - playerGame.getAces() - playerGame.getBlocks())
+        .ifPresent(playerGame::setPoints);
+    getInteger(element.getElementById("RecTot"), text -> text.replace('-', '0'))
+        .ifPresent(playerGame::setRecNumber);
+    getInteger(element.getElementById("RecPos"), text -> text.replace("%", ""))
+        .ifPresent(playerGame::setRecPct);
 
     return playerGame;
   }
