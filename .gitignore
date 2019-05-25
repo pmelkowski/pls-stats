@@ -2,5 +2,4 @@
 /.settings/
 /.classpath
 /.project
-/pls.db/
-/derby.log
+/pls.mv.db
