@@ -64,9 +64,10 @@ public class PlsStats {
   }
 
   @Transactional
-  protected void deleteGamesFromDate(GameRepository games, PlayerGameRepository playerGames,
-      Date start) {
+  protected void deleteGamesFromDate(League league, GameRepository games,
+      PlayerGameRepository playerGames, Date start) {
     games.findByDateGreaterThanOrderByDate(start).stream()
+        .filter(game -> game.isFrom(league))
         .peek(game -> System.out.println("deleting: " + game))
         .map(Game::getId)
         .forEach(gameId -> deleteGame(games, playerGames, gameId));
