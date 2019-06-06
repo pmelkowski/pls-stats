@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -28,20 +29,31 @@ import pl.plusliga.parser.ParserFactory;
 @EnableJpaRepositories(basePackages = "pl.plusliga.model")
 public class PlsStats {
 
+  @Inject
+  TeamRepository teams;
+
+  @Inject
+  PlayerRepository players;
+
+  @Inject
+  GameRepository games;
+
+  @Inject
+  PlayerGameRepository playerGames;
+
   public static void main(String[] args) {
     SpringApplication.run(PlsStats.class, League.ORLENLIGA.toString());
   }
 
   @Bean
-  public CommandLineRunner run(TeamRepository teams, PlayerRepository players, GameRepository games,
-      PlayerGameRepository playerGames) {
+  public CommandLineRunner run() {
     return (args) -> {
       League league = League.valueOf(args[0]);
-      updateDatabase(league, teams, players, games);
+      updateDatabase(league);
 
       List<Game> recentGames = games.findByDateGreaterThanOrderByDate(
           Date.from(ZonedDateTime.now().minusMonths(2).toInstant()));
-      updateGames(league, players, playerGames, recentGames);
+      updateGames(league, recentGames);
 
       players.findAll().stream().filter(player -> player.getLeague() == league)
           .collect(Collectors.groupingBy(Player::getPosition, () -> new EnumMap<>(Position.class),
@@ -58,31 +70,28 @@ public class PlsStats {
   }
 
   @Transactional
-  protected void purgeDatabase(PlayerRepository players, PlayerGameRepository playerGames) {
+  protected void purgeDatabase() {
     playerGames.deleteAll();
     players.deleteAll();
   }
 
   @Transactional
-  protected void deleteGamesFromDate(League league, GameRepository games,
-      PlayerGameRepository playerGames, Date start) {
+  protected void deleteGamesFromDate(League league, Date start) {
     games.findByDateGreaterThanOrderByDate(start).stream()
         .filter(game -> game.isFrom(league))
         .peek(game -> System.out.println("deleting: " + game))
         .map(Game::getId)
-        .forEach(gameId -> deleteGame(games, playerGames, gameId));
+        .forEach(this::deleteGame);
   }
 
   @Transactional
-  protected void deleteGame(GameRepository games, PlayerGameRepository playerGames,
-      Integer gameId) {
+  protected void deleteGame(Integer gameId) {
     playerGames.deleteAll(playerGames.findByKeyGameId(gameId));
     games.deleteById(gameId);
   }
 
   @Transactional
-  protected void updateDatabase(League league, TeamRepository teams, PlayerRepository players,
-      GameRepository games) {
+  protected void updateDatabase(League league) {
     List<Team> leagueTeams = teams.saveAll(
         ParserFactory.getParser(league, Team.class, league).getEntities(league.getTeamsUrl()));
     players.saveAll(ParserFactory.getParser(league, Player.class, leagueTeams)
@@ -95,8 +104,7 @@ public class PlsStats {
   }
 
   @Transactional
-  protected void updateGames(League league, PlayerRepository players,
-      PlayerGameRepository playerGames, List<Game> gameList) {
+  protected void updateGames(League league, List<Game> gameList) {
     List<Player> allPlayers = players.findAll();
     gameList.stream().filter(game -> game.isFrom(league))
         .filter(game -> playerGames.findByKeyGameId(game.getId()).isEmpty())
