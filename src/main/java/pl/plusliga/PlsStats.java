@@ -49,23 +49,19 @@ public class PlsStats {
   public CommandLineRunner run() {
     return (args) -> {
       League league = League.valueOf(args[0]);
+Team wisla = new Team(); wisla.setId(95298); wisla.setLeague(league); wisla.setName("Wisla Warszawa"); teams.save(wisla);
       updateDatabase(league);
 
       List<Game> recentGames = games.findByDateGreaterThanOrderByDate(
           Date.from(ZonedDateTime.now().minusMonths(2).toInstant()));
       updateGames(league, recentGames);
 
-      players.findAll().stream().filter(player -> player.getLeague() == league)
-          .collect(Collectors.groupingBy(Player::getPosition, () -> new EnumMap<>(Position.class),
-              Collectors.toList()))
-          .forEach((position, posPlayers) -> {
-            System.out.println();
-            System.out.println(position.toString().toUpperCase());
-            posPlayers.stream().map(player -> new PlayerStatistics(player, recentGames))
-                .sorted(Comparator.comparingDouble(PlayerStatistics::getPointsMean).reversed()
-                    .thenComparing(PlayerStatistics::getPlayerName))
-                .forEach(System.out::println);
-          });
+      EnumMap<Position, List<PlayerStatistics>> stats = getStatistics(league, recentGames);
+      stats.forEach((position, posPlayers) -> {
+        System.out.println();
+        System.out.println(position.toString().toUpperCase());
+        posPlayers.forEach(System.out::println);
+      });
     };
   }
 
@@ -112,6 +108,21 @@ public class PlsStats {
         .map(game -> ParserFactory.getParser(league, PlayerGame.class, allPlayers, game.getId())
             .getEntities(game.getStatsUrl()))
         .forEach(playerGames::saveAll);
+  }
+
+  protected EnumMap<Position, List<PlayerStatistics>> getStatistics(League league, List<Game> gameList) {
+    return players.findAll().stream()
+        .filter(player -> player.getLeague() == league)
+        .collect(Collectors.groupingBy(
+            Player::getPosition,
+            () -> new EnumMap<>(Position.class),
+            Collectors.mapping(
+                player -> new PlayerStatistics(player, gameList),
+                Collectors.collectingAndThen(
+                    Collectors.toList(), stats -> stats.stream()
+                        .sorted(Comparator.comparingDouble(PlayerStatistics::getPointsMean).reversed()
+                            .thenComparing(PlayerStatistics::getPlayerName))
+                        .collect(Collectors.toList())))));
   }
 
 }
