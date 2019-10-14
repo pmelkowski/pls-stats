@@ -229,9 +229,9 @@ public class PlayerStatistics {
   @Override
   public String toString() {
     return String.format(
-        "%-30s\t%-35s\t%2d/%-2d %6.2f%% %6.2f%% %6.2f%% %6.2f%%    %1.0f %4.2f %1.0f %1.0f    %6.2f%% %6.2f%% %6.2f%% %6.2f%%    %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %-4d\n"
-            + "%161s %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f\n"
-            + "%161s %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f",
+        "%-30s\t%-25s\t%2d/%-2d %6.2f%% %6.2f%% %6.2f%% %6.2f%%    %1.0f %4.2f %1.0f %1.0f    %6.2f%% %6.2f%% %6.2f%% %6.2f%%    %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %-4d\n"
+            + "%153s %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f\n"
+            + "%153s %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f",
             player.getName(), player.getTeam().getName(),
             setsPlayed.getCount(), inTeam.getCount(), inTeam.getMean(), played.getMean(), primary.getMean(), secondary.getMean(),
             setsPlayed.getMin(), setsPlayed.getMean(), setsPlayed.getMax(), setsPlayed.getLastValue(),

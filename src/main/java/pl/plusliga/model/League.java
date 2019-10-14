@@ -5,8 +5,8 @@ import java.util.EnumSet;
 
 public enum League {
 
-  ORLENLIGA("http://www.lsk.plps.pl/teams.html",
-      "http://www.lsk.plps.pl/players.html?memo=%7B%22players%22%3A%7B%22mainFilter%22%3A%22letter%22%2C%22subFilter%22%3A%22all%22%7D%7D",
+  LSK("http://www.lsk.plps.pl/teams.html",
+      "http://www.lsk.pls.pl/players.html?memo=%7B%22players%22%3A%7B%22mainFilter%22%3A%22letter%22%2C%22subFilter%22%3A%22all%22%7D%7D",
       "http://www.lsk.pls.pl/games.html?memo=%7B%22games%22%3A%7B%7D%7D",
       "http://www.lsk.pls.pl/pcup/s/games.html",
       "http://www.lsk.pls.pl/scup/s/game.html",

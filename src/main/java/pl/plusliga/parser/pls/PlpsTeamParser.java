@@ -32,7 +32,7 @@ public class PlpsTeamParser implements JsoupParser<Team> {
 
   public static void main(String args[]) {
     List<Team> teams =
-        new PlpsTeamParser(League.ORLENLIGA).getEntities(League.ORLENLIGA.getTeamsUrl());
+        new PlpsTeamParser(League.LSK).getEntities(League.LSK.getTeamsUrl());
     System.out.println(teams);
   }
 

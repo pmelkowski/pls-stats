@@ -42,14 +42,13 @@ public class PlsStats {
   PlayerGameRepository playerGames;
 
   public static void main(String[] args) {
-    SpringApplication.run(PlsStats.class, League.ORLENLIGA.toString());
+    SpringApplication.run(PlsStats.class, League.LSK.toString());
   }
 
   @Bean
   public CommandLineRunner run() {
     return (args) -> {
       League league = League.valueOf(args[0]);
-Team wisla = new Team(); wisla.setId(95298); wisla.setLeague(league); wisla.setName("Wisla Warszawa"); teams.save(wisla);
       updateDatabase(league);
 
       List<Game> recentGames = games.findByDateGreaterThanOrderByDate(
@@ -95,17 +94,16 @@ Team wisla = new Team(); wisla.setId(95298); wisla.setLeague(league); wisla.setN
     games.saveAll(ParserFactory.getParser(league, Game.class).getEntities(league.getGamesUrl()));
     ParserFactory.getCupGameParser(league, leagueTeams)
         .ifPresent(parser -> games.saveAll(parser.getEntities(league.getCupGamesUrl())));
-    ParserFactory.getSuperCupGameParser(league, leagueTeams)
-        .ifPresent(parser -> games.saveAll(parser.getEntities(league.getSuperCupGameUrl())));
+    //ParserFactory.getSuperCupGameParser(league, leagueTeams)
+    //    .ifPresent(parser -> games.saveAll(parser.getEntities(league.getSuperCupGameUrl())));
   }
 
   @Transactional
   protected void updateGames(League league, List<Game> gameList) {
-    List<Player> allPlayers = players.findAll();
     gameList.stream().filter(game -> game.isFrom(league))
         .filter(game -> playerGames.findByKeyGameId(game.getId()).isEmpty())
         .peek(System.out::println)
-        .map(game -> ParserFactory.getParser(league, PlayerGame.class, allPlayers, game.getId())
+        .map(game -> ParserFactory.getParser(league, PlayerGame.class, game.getId())
             .getEntities(game.getStatsUrl()))
         .forEach(playerGames::saveAll);
   }

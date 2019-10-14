@@ -12,9 +12,9 @@ import pl.plusliga.model.League;
 import pl.plusliga.parser.JsoupParser;
 
 public class PlpsGameParser implements JsoupParser<Game> {
-  protected static Pattern TEAM_ID_PATTERN = Pattern.compile(".*/teams/id/(\\d+).html");
+  protected static Pattern TEAM_ID_PATTERN = Pattern.compile(".*/teams/id/(\\d+)\\.html");
   protected static DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm");
-  protected static Pattern MATCH_ID_PATTERN = Pattern.compile(".*mID=(\\d+).*");
+  protected static Pattern MATCH_ID_PATTERN = Pattern.compile(".*/games/id/(\\d+)\\.html");
 
   @Override
   public Game getEntity(Element element) {

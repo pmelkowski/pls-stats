@@ -12,9 +12,9 @@ import pl.plusliga.model.Player;
 import pl.plusliga.model.PlayerGame;
 import pl.plusliga.model.PlayerTeam;
 import pl.plusliga.model.Team;
-import pl.plusliga.parser.pls.DataprojectPlayerGameParser;
 import pl.plusliga.parser.pls.PlpsCupGameParser;
 import pl.plusliga.parser.pls.PlpsGameParser;
+import pl.plusliga.parser.pls.PlpsPlayerGameParser;
 import pl.plusliga.parser.pls.PlpsPlayerParser;
 import pl.plusliga.parser.pls.PlpsPlayerTeamParser;
 import pl.plusliga.parser.pls.PlpsSuperCupGameParser;
@@ -26,14 +26,14 @@ public class ParserFactory {
       Stream
           .of(new SimpleEntry<>(Game.class, PlpsGameParser.class),
               new SimpleEntry<>(Player.class, PlpsPlayerParser.class),
-              new SimpleEntry<>(PlayerGame.class, DataprojectPlayerGameParser.class),
+              new SimpleEntry<>(PlayerGame.class, PlpsPlayerGameParser.class),
               new SimpleEntry<>(PlayerTeam.class, PlpsPlayerTeamParser.class),
               new SimpleEntry<>(Team.class, PlpsTeamParser.class))
           .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
 
   private static final Map<League, Map<Class<?>, Class<? extends JsoupParser<?>>>> PARSER_MAP =
       Stream
-          .of(new SimpleEntry<>(League.ORLENLIGA, PLS_MAP),
+          .of(new SimpleEntry<>(League.LSK, PLS_MAP),
               new SimpleEntry<>(League.PLUSLIGA, PLS_MAP))
           .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
 
@@ -56,7 +56,7 @@ public class ParserFactory {
 
   public static Optional<JsoupParser<Game>> getCupGameParser(League league, Collection<Team> teams) {
     switch (league) {
-      case ORLENLIGA:
+      case LSK:
       case PLUSLIGA:
         return Optional.of(new PlpsCupGameParser(teams));
       default:
@@ -66,7 +66,7 @@ public class ParserFactory {
 
   public static Optional<JsoupParser<Game>> getSuperCupGameParser(League league, Collection<Team> teams) {
     switch (league) {
-      case ORLENLIGA:
+      case LSK:
       case PLUSLIGA:
         return Optional.of(new PlpsSuperCupGameParser(teams));
       default:
