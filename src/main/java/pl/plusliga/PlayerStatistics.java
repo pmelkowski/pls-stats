@@ -12,6 +12,7 @@ import pl.plusliga.model.Team;
 
 public class PlayerStatistics {
   protected static final int WINDOW = 6;
+  protected static final int HALF_WINDOW = Math.round(WINDOW / 2.0f);
 
   public static BiPredicate<Player, Game> playedGame = (player, game) -> {
     return player.getTeams().stream().filter(team -> team.isCurrent(game.getDate())).findAny()
@@ -149,22 +150,14 @@ public class PlayerStatistics {
   private final ExponentialMovingAverage playerPoints = new ExponentialMovingAverage(WINDOW);
   private final ExponentialMovingAverage teamPoints = new ExponentialMovingAverage(WINDOW);
   private final ExponentialMovingAverage gamePoints = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage pointsPerSetHome =
-      new ExponentialMovingAverage((WINDOW + 1) / 2);
-  private final ExponentialMovingAverage playerPointsHome =
-      new ExponentialMovingAverage((WINDOW + 1) / 2);
-  private final ExponentialMovingAverage teamPointsHome =
-      new ExponentialMovingAverage((WINDOW + 1) / 2);
-  private final ExponentialMovingAverage gamePointsHome =
-      new ExponentialMovingAverage((WINDOW + 1) / 2);
-  private final ExponentialMovingAverage pointsPerSetAway =
-      new ExponentialMovingAverage((WINDOW + 1) / 2);
-  private final ExponentialMovingAverage playerPointsAway =
-      new ExponentialMovingAverage((WINDOW + 1) / 2);
-  private final ExponentialMovingAverage teamPointsAway =
-      new ExponentialMovingAverage((WINDOW + 1) / 2);
-  private final ExponentialMovingAverage gamePointsAway =
-      new ExponentialMovingAverage((WINDOW + 1) / 2);
+  private final ExponentialMovingAverage pointsPerSetHome = new ExponentialMovingAverage(HALF_WINDOW);
+  private final ExponentialMovingAverage playerPointsHome = new ExponentialMovingAverage(HALF_WINDOW);
+  private final ExponentialMovingAverage teamPointsHome = new ExponentialMovingAverage(HALF_WINDOW);
+  private final ExponentialMovingAverage gamePointsHome = new ExponentialMovingAverage(HALF_WINDOW);
+  private final ExponentialMovingAverage pointsPerSetAway = new ExponentialMovingAverage(HALF_WINDOW);
+  private final ExponentialMovingAverage playerPointsAway = new ExponentialMovingAverage(HALF_WINDOW);
+  private final ExponentialMovingAverage teamPointsAway = new ExponentialMovingAverage(HALF_WINDOW);
+  private final ExponentialMovingAverage gamePointsAway = new ExponentialMovingAverage(HALF_WINDOW);
   private int totalPoints = 0;
 
   public PlayerStatistics(Player player, List<Game> allGames) {
