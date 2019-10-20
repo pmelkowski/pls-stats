@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import pl.plusliga.model.Game;
@@ -42,7 +43,8 @@ public class PlsStats {
   PlayerGameRepository playerGames;
 
   public static void main(String[] args) {
-    SpringApplication.run(PlsStats.class, League.LSK.toString());
+    ConfigurableApplicationContext context = SpringApplication.run(PlsStats.class, League.LSK.toString());
+    SpringApplication.exit(context);
   }
 
   @Bean
