@@ -1,6 +1,7 @@
 package pl.plusliga.parser.pls;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -19,15 +20,25 @@ public class PlpsPlayerGameParser implements JsoupParser<PlayerGame> {
 
   @Override
   public PlayerGame getEntity(Element element) {
-    Elements columns = element.getElementsByTag("td");
-    Element playerLink = columns.get(0).select("a").first();
-    if (playerLink == null) {
+    Elements columns = element.children();
+    Optional<Integer> playerId = Optional.of(columns)
+        .map(Elements::first)
+        .map(header -> header.select("a"))
+        .map(Elements::first)
+        .map(anchor -> anchor.attr("href"))
+        .filter(url -> !url.isEmpty())
+        .flatMap(url -> getInteger(url, PLAYER_ID_PATTERN, 1));
+    if (!playerId.isPresent()) {
+      return null;
+    }
+    String playerNo = columns.first().children().first().text().trim();
+    if (playerNo.isEmpty()) {
+      System.err.println(columns.first());
       return null;
     }
 
     PlayerGameKey key = new PlayerGameKey();
-    getInteger(playerLink.absUrl("href"), PLAYER_ID_PATTERN, 1)
-       .ifPresent(key::setPlayerId);
+    key.setPlayerId(playerId.get());
     key.setGameId(gameId);
     PlayerGame playerGame = new PlayerGame();
     playerGame.setKey(key);
@@ -35,9 +46,9 @@ public class PlpsPlayerGameParser implements JsoupParser<PlayerGame> {
     int setsPlayed = 0;
     for (int set = 1; set <= 5; set++) {
       String position = columns.get(set).text();
-      if (position.isEmpty())
+      if (position.isEmpty()) {
         continue;
-
+      }
       playerGame.setPlayed(true);
       setsPlayed++;
       if (!position.equals("*")) {
@@ -49,24 +60,18 @@ public class PlpsPlayerGameParser implements JsoupParser<PlayerGame> {
     }
     playerGame.setSets(setsPlayed);
 
-    getInteger(columns.get(8), text -> text)
-        .ifPresent(playerGame::setAces);
-    getInteger(columns.get(19), text -> text)
-        .ifPresent(playerGame::setPoints);
-    getInteger(columns.get(21), text -> text)
-        .ifPresent(playerGame::setBlocks);
+    getInteger(columns.get(8)).ifPresent(playerGame::setAces);
+    getInteger(columns.get(21)).ifPresent(playerGame::setPoints);
+    getInteger(columns.get(23)).ifPresent(playerGame::setBlocks);
 
-    getInteger(columns.get(11), text -> text)
-        .ifPresent(recTotal -> {
-          playerGame.setRecNumber(recTotal);
-          if (recTotal > 0) {
-            int recFault = getInteger(columns.get(12), text -> text).orElse(0);
-            int recNegative = getInteger(columns.get(13), text -> text).orElse(0);
-            float recPositive = recTotal - recFault - recNegative;
-            playerGame.setRecPct(Math.round(100 * recPositive / recTotal));
-          }
-        }
-    );
+    getInteger(columns.get(11)).ifPresent(recTotal -> {
+      playerGame.setRecNumber(recTotal);
+      if (recTotal > 0) {
+        float recPositivePct = getFloat(columns.get(15)).orElse(0f);
+        float recPerfectPct = getFloat(columns.get(17)).orElse(0f);
+        playerGame.setRecPct(Math.round(recPositivePct + recPerfectPct));
+      }
+    });
 
     return playerGame;
   }
