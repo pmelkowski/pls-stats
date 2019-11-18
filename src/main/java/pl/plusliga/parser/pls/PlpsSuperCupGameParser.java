@@ -4,7 +4,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jsoup.nodes.Element;
@@ -32,9 +31,9 @@ public class PlpsSuperCupGameParser implements JsoupParser<Game> {
 
     Elements scores = element.select("div.team_score_container_pp > div > span");
     game.setHomeScore(
-        getInteger(scores.get(0), UnaryOperator.identity()).orElse(0));
+        getInteger(scores.get(0)).orElse(0));
     game.setVisitorScore(
-        getInteger(scores.get(1), UnaryOperator.identity()).orElse(0));
+        getInteger(scores.get(1)).orElse(0));
     getDate(element.select("div.team_score_pp > h3").text(), DATE_FORMAT)
         .ifPresent(game::setDate);
     game.setHomeTeamId(teamIds.get(element.select("div.team_a_pp > h5").text()));

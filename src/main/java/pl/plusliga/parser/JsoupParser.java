@@ -68,11 +68,19 @@ public interface JsoupParser<E> {
         .collect(Collectors.toList());
   }
 
-  default Optional<Integer> getInteger(Element element, UnaryOperator<String> operator) {
+  default Optional<String> getString(Element element, UnaryOperator<String> operator) {
     return Optional.ofNullable(element)
         .map(Element::text)
         .map(operator)
-        .filter(t -> !t.isEmpty())
+        .filter(t -> !t.isEmpty());
+  }
+
+  default Optional<Integer> getInteger(Element element) {
+    return getInteger(element, UnaryOperator.identity());
+  }
+
+  default Optional<Integer> getInteger(Element element, UnaryOperator<String> operator) {
+    return getString(element, operator)
         .map(Integer::parseInt);
   }
 
@@ -83,6 +91,11 @@ public interface JsoupParser<E> {
         .map(matcher -> matcher.group(group))
         .filter(t -> !t.isEmpty())
         .map(Integer::parseInt);
+  }
+
+  default Optional<Float> getFloat(Element element) {
+    return getString(element, s -> s.replace(',', '.'))
+        .map(Float::parseFloat);
   }
 
   static DateTimeFormatter buildDateTimeFormatter(String pattern) {

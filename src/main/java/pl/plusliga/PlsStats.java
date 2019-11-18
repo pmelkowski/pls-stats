@@ -43,7 +43,7 @@ public class PlsStats {
   PlayerGameRepository playerGames;
 
   public static void main(String[] args) {
-    ConfigurableApplicationContext context = SpringApplication.run(PlsStats.class, League.LSK.toString());
+    ConfigurableApplicationContext context = SpringApplication.run(PlsStats.class, League.PLUSLIGA.toString());
     SpringApplication.exit(context);
   }
 
