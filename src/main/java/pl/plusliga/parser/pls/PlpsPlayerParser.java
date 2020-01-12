@@ -14,7 +14,7 @@ import pl.plusliga.model.Team;
 import pl.plusliga.parser.JsoupParser;
 
 public class PlpsPlayerParser implements JsoupParser<Player> {
-  protected static Pattern PLAYER_ID_PATTERN = Pattern.compile(".*/id/(\\d+)\\.html");
+  protected static Pattern PLAYER_ID_PATTERN = Pattern.compile(".*/id/(\\d+)(\\.html)?");
   protected static DateTimeFormatter DATE_FORMAT = JsoupParser.buildDateTimeFormatter("dd.MM.yyyy");
 
   protected final Set<Integer> teamIds;
@@ -48,8 +48,10 @@ public class PlpsPlayerParser implements JsoupParser<Player> {
 
   @Override
   public List<Player> getEntities(String url) {
-    return getDocument(url).select("div.player > a").stream().map(element -> element.absUrl("href"))
-        .map(this::getEntity).collect(Collectors.toList());
+    return getDocument(url).select("div.player > a").stream()
+        .map(element -> element.absUrl("href"))
+        .map(this::getEntity)
+        .collect(Collectors.toList());
   }
 
   public static void main(String args[]) {

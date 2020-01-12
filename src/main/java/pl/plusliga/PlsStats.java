@@ -1,10 +1,12 @@
 package pl.plusliga;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -19,11 +21,13 @@ import pl.plusliga.model.GameRepository;
 import pl.plusliga.model.League;
 import pl.plusliga.model.Player;
 import pl.plusliga.model.PlayerGame;
+import pl.plusliga.model.PlayerGameKey;
 import pl.plusliga.model.PlayerGameRepository;
 import pl.plusliga.model.PlayerRepository;
 import pl.plusliga.model.Position;
 import pl.plusliga.model.Team;
 import pl.plusliga.model.TeamRepository;
+import pl.plusliga.parser.JsoupParser;
 import pl.plusliga.parser.ParserFactory;
 
 @SpringBootApplication
@@ -51,13 +55,12 @@ public class PlsStats {
   public CommandLineRunner run() {
     return (args) -> {
       League league = League.valueOf(args[0]);
-      updateDatabase(league);
+      updateTeams(league);
+      updateGames(league);
+      Date start = Date.from(ZonedDateTime.now().minusMonths(2).toInstant());
+      updatePlayerData(league, start);
 
-      List<Game> recentGames = games.findByDateGreaterThanOrderByDate(
-          Date.from(ZonedDateTime.now().minusMonths(2).toInstant()));
-      updateGames(league, recentGames);
-
-      EnumMap<Position, List<PlayerStatistics>> stats = getStatistics(league, recentGames);
+      EnumMap<Position, List<PlayerStatistics>> stats = getStatistics(league, start);
       stats.forEach((position, posPlayers) -> {
         System.out.println();
         System.out.println(position.toString().toUpperCase());
@@ -70,6 +73,8 @@ public class PlsStats {
   protected void purgeDatabase() {
     playerGames.deleteAll();
     players.deleteAll();
+    games.deleteAll();
+    teams.deleteAll();
   }
 
   @Transactional
@@ -88,29 +93,52 @@ public class PlsStats {
   }
 
   @Transactional
-  protected void updateDatabase(League league) {
-    List<Team> leagueTeams = teams.saveAll(
+  protected void updateTeams(League league) {
+    teams.saveAll(
         ParserFactory.getParser(league, Team.class, league).getEntities(league.getTeamsUrl()));
-    players.saveAll(ParserFactory.getParser(league, Player.class, leagueTeams)
-        .getEntities(league.getPlayersUrl()));
+  }
+
+  @Transactional
+  protected void updateGames(League league) {
     games.saveAll(ParserFactory.getParser(league, Game.class).getEntities(league.getGamesUrl()));
-    ParserFactory.getCupGameParser(league, leagueTeams)
+    ParserFactory.getCupGameParser(league, teams.findAll())
         .ifPresent(parser -> games.saveAll(parser.getEntities(league.getCupGamesUrl())));
     //ParserFactory.getSuperCupGameParser(league, leagueTeams)
     //    .ifPresent(parser -> games.saveAll(parser.getEntities(league.getSuperCupGameUrl())));
   }
 
   @Transactional
-  protected void updateGames(League league, List<Game> gameList) {
-    gameList.stream().filter(game -> game.isFrom(league))
+  protected void updatePlayerData(League league, Date start) {
+    List<PlayerGame> playerGameList = games.findByDateGreaterThanOrderByDate(start).stream()
+        .filter(game -> game.isFrom(league))
         .filter(game -> playerGames.findByKeyGameId(game.getId()).isEmpty())
         .peek(System.out::println)
         .map(game -> ParserFactory.getParser(league, PlayerGame.class, game.getId())
             .getEntities(game.getStatsUrl()))
-        .forEach(playerGames::saveAll);
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+
+    Set<Integer> playerIds = playerGameList.stream()
+        .map(PlayerGame::getKey)
+        .map(PlayerGameKey::getPlayerId)
+        .collect(Collectors.toSet());
+    updatePlayers(league, playerIds);
+
+    playerGames.saveAll(playerGameList);
   }
 
-  protected EnumMap<Position, List<PlayerStatistics>> getStatistics(League league, List<Game> gameList) {
+  @Transactional
+  protected void updatePlayers(League league, Collection<Integer> playerIds) {
+    JsoupParser<Player> parser = ParserFactory.getParser(league, Player.class, teams.findAll());
+    playerIds.stream()
+        .map(league::getPlayerUrl)
+        .map(parser::getEntity)
+        .forEach(players::save);
+    
+  }
+
+  protected EnumMap<Position, List<PlayerStatistics>> getStatistics(League league, Date start) {
+    List<Game> gameList = games.findByDateGreaterThanOrderByDate(start);
     return players.findAll().stream()
         .filter(player -> player.getLeague() == league)
         .collect(Collectors.groupingBy(

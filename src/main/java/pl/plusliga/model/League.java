@@ -7,6 +7,7 @@ public enum League {
 
   LSK("http://www.lsk.plps.pl/teams.html",
       "http://www.lsk.pls.pl/players.html?memo=%7B%22players%22%3A%7B%22mainFilter%22%3A%22letter%22%2C%22subFilter%22%3A%22all%22%7D%7D",
+      "http://www.lsk.pls.pl/players/id/",
       "http://www.lsk.pls.pl/games.html?memo=%7B%22games%22%3A%7B%7D%7D",
       "http://www.lsk.pls.pl/pcup/s/games.html",
       "http://www.lsk.pls.pl/scup/s/game.html",
@@ -14,6 +15,7 @@ public enum League {
       Position.środkowa),
   PLUSLIGA("http://www.plusliga.pl/teams.html",
       "http://www.plusliga.pl/players.html?memo=%7B%22players%22%3A%7B%22mainFilter%22%3A%22letter%22%2C%22subFilter%22%3A%22all%22%7D%7D",
+      "http://www.plusliga.pl/players/id/",
       "http://www.plusliga.pl/games.html?memo=%7B%22games%22%3A%7B%7D%7D",
       "http://www.plusliga.pl/pcup/s/games.html",
       "http://www.plusliga.pl/scup/s/game.html",
@@ -22,15 +24,17 @@ public enum League {
 
   final String teamsUrl;
   final String playersUrl;
+  final String playerUrl;
   final String gamesUrl;
   final String cupGamesUrl;
   final String superCupGameUrl;
   final EnumSet<Position> positions;
 
-  League(String teamsUrl, String playersUrl, String gamesUrl, String cupGamesUrl,
+  League(String teamsUrl, String playersUrl, String playerUrl, String gamesUrl, String cupGamesUrl,
       String suoerCupGameUrl, Position... positions) {
     this.teamsUrl = teamsUrl;
     this.playersUrl = playersUrl;
+    this.playerUrl = playerUrl;
     this.gamesUrl = gamesUrl;
     this.cupGamesUrl = cupGamesUrl;
     this.superCupGameUrl = suoerCupGameUrl;
@@ -43,6 +47,10 @@ public enum League {
 
   public String getPlayersUrl() {
     return playersUrl;
+  }
+
+  public String getPlayerUrl(Integer playerId) {
+    return playerUrl + playerId;
   }
 
   public String getGamesUrl() {
