@@ -14,7 +14,7 @@ import pl.plusliga.model.Team;
 import pl.plusliga.parser.JsoupParser;
 
 public class PlpsCupGameParser implements JsoupParser<Game> {
-  protected static DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+  protected static DateTimeFormatter DATE_FORMAT = JsoupParser.buildDateTimeFormatter("dd-MM-yyyy[ HH:mm]");
   protected static Pattern MATCH_ID_PATTERN = Pattern.compile(".*mID=(\\d+).*");
 
   private final Map<String, Integer> teamIds;
