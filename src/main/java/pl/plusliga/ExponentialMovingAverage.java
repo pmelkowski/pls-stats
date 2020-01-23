@@ -7,16 +7,13 @@ public class ExponentialMovingAverage
     extends org.springframework.integration.support.management.ExponentialMovingAverage {
 
   protected final int window;
+  protected final MetricType type;
   protected final Deque<Double> samples = new ArrayDeque<Double>();
 
-  public ExponentialMovingAverage(int window) {
+  public ExponentialMovingAverage(int window, MetricType type) {
     super(window);
     this.window = window;
-  }
-
-  public ExponentialMovingAverage(int window, double factor) {
-    super(window, factor);
-    this.window = window;
+    this.type = type;
   }
 
   @Override
@@ -46,6 +43,11 @@ public class ExponentialMovingAverage
   @Override
   public double getMin() {
     return samples.stream().min(Double::compare).orElse(0.0);
+  }
+
+  @Override
+  public String toString() {
+    return String.format(type.getFormat(), getMin(), getMean(), getMax(), getLastValue());
   }
 
 }

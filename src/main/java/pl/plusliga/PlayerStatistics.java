@@ -139,25 +139,25 @@ public class PlayerStatistics {
   };
 
   private final Player player;
-  private final ExponentialMovingAverage inTeam = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage played = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage primary = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage secondary = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage sets = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage setsPlayed = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage setsPlayedPct = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage pointsPerSet = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage playerPoints = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage teamPoints = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage gamePoints = new ExponentialMovingAverage(WINDOW);
-  private final ExponentialMovingAverage pointsPerSetHome = new ExponentialMovingAverage(HALF_WINDOW);
-  private final ExponentialMovingAverage playerPointsHome = new ExponentialMovingAverage(HALF_WINDOW);
-  private final ExponentialMovingAverage teamPointsHome = new ExponentialMovingAverage(HALF_WINDOW);
-  private final ExponentialMovingAverage gamePointsHome = new ExponentialMovingAverage(HALF_WINDOW);
-  private final ExponentialMovingAverage pointsPerSetAway = new ExponentialMovingAverage(HALF_WINDOW);
-  private final ExponentialMovingAverage playerPointsAway = new ExponentialMovingAverage(HALF_WINDOW);
-  private final ExponentialMovingAverage teamPointsAway = new ExponentialMovingAverage(HALF_WINDOW);
-  private final ExponentialMovingAverage gamePointsAway = new ExponentialMovingAverage(HALF_WINDOW);
+  private final ExponentialMovingAverage inTeam = new ExponentialMovingAverage(WINDOW, MetricType.PERCENT);
+  private final ExponentialMovingAverage played = new ExponentialMovingAverage(WINDOW, MetricType.PERCENT);
+  private final ExponentialMovingAverage primary = new ExponentialMovingAverage(WINDOW, MetricType.PERCENT);
+  private final ExponentialMovingAverage secondary = new ExponentialMovingAverage(WINDOW, MetricType.PERCENT);
+  private final ExponentialMovingAverage sets = new ExponentialMovingAverage(WINDOW, MetricType.SMALLINT);
+  private final ExponentialMovingAverage setsPlayed = new ExponentialMovingAverage(WINDOW, MetricType.SMALLINT);
+  private final ExponentialMovingAverage setsPlayedPct = new ExponentialMovingAverage(WINDOW, MetricType.PERCENT);
+  private final ExponentialMovingAverage pointsPerSet = new ExponentialMovingAverage(WINDOW, MetricType.FLOAT);
+  private final ExponentialMovingAverage playerPoints = new ExponentialMovingAverage(WINDOW, MetricType.INT);
+  private final ExponentialMovingAverage teamPoints = new ExponentialMovingAverage(WINDOW, MetricType.INT);
+  private final ExponentialMovingAverage gamePoints = new ExponentialMovingAverage(WINDOW, MetricType.INT);
+  private final ExponentialMovingAverage pointsPerSetHome = new ExponentialMovingAverage(HALF_WINDOW, MetricType.FLOAT);
+  private final ExponentialMovingAverage playerPointsHome = new ExponentialMovingAverage(HALF_WINDOW, MetricType.INT);
+  private final ExponentialMovingAverage teamPointsHome = new ExponentialMovingAverage(HALF_WINDOW, MetricType.INT);
+  private final ExponentialMovingAverage gamePointsHome = new ExponentialMovingAverage(HALF_WINDOW, MetricType.INT);
+  private final ExponentialMovingAverage pointsPerSetAway = new ExponentialMovingAverage(HALF_WINDOW, MetricType.FLOAT);
+  private final ExponentialMovingAverage playerPointsAway = new ExponentialMovingAverage(HALF_WINDOW, MetricType.INT);
+  private final ExponentialMovingAverage teamPointsAway = new ExponentialMovingAverage(HALF_WINDOW, MetricType.INT);
+  private final ExponentialMovingAverage gamePointsAway = new ExponentialMovingAverage(HALF_WINDOW, MetricType.INT);
   private int totalPoints = 0;
 
   public PlayerStatistics(Player player, List<Game> allGames) {
@@ -222,26 +222,16 @@ public class PlayerStatistics {
   @Override
   public String toString() {
     return String.format(
-        "%-30s\t%-35s\t%2d/%-2d %6.2f%% %6.2f%% %6.2f%% %6.2f%%    %1.0f %4.2f %1.0f %1.0f    %6.2f%% %6.2f%% %6.2f%% %6.2f%%    %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %-4d\n"
-            + "%161s %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f\n"
-            + "%161s %5.2f %5.2f %5.2f %5.2f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f    %2.0f %5.2f %2.0f %2.0f",
+        "%-25s %-35s"
+            + " %2d/%-2d %6.2f%% %6.2f%% %6.2f%% %6.2f%%"
+            + "   %s   %s    %s   %s   %s   %s   %-4d\n"
+            + "%149s %s   %s   %s   %s\n"
+            + "%149s %s   %s   %s   %s",
             player.getName(), player.getTeam().getName(),
             setsPlayed.getCount(), inTeam.getCount(), inTeam.getMean(), played.getMean(), primary.getMean(), secondary.getMean(),
-            setsPlayed.getMin(), setsPlayed.getMean(), setsPlayed.getMax(), setsPlayed.getLastValue(),
-            setsPlayedPct.getMin(), setsPlayedPct.getMean(), setsPlayedPct.getMax(), setsPlayedPct.getLastValue(),
-            pointsPerSet.getMin(), pointsPerSet.getMean(), pointsPerSet.getMax(), pointsPerSet.getLastValue(),
-            playerPoints.getMin(), playerPoints.getMean(), playerPoints.getMax(), playerPoints.getLastValue(),
-            teamPoints.getMin(), teamPoints.getMean(), teamPoints.getMax(), teamPoints.getLastValue(),
-            gamePoints.getMin(), gamePoints.getMean(), gamePoints.getMax(), gamePoints.getLastValue(),
-            totalPoints,
-            "H", pointsPerSetHome.getMin(), pointsPerSetHome.getMean(), pointsPerSetHome.getMax(), pointsPerSetHome.getLastValue(),
-            playerPointsHome.getMin(), playerPointsHome.getMean(), playerPointsHome.getMax(), playerPointsHome.getLastValue(),
-            teamPointsHome.getMin(), teamPointsHome.getMean(), teamPointsHome.getMax(), teamPointsHome.getLastValue(),
-            gamePointsHome.getMin(), gamePointsHome.getMean(), gamePointsHome.getMax(), gamePointsHome.getLastValue(),
-            "A", pointsPerSetAway.getMin(), pointsPerSetAway.getMean(), pointsPerSetAway.getMax(), pointsPerSetAway.getLastValue(),
-            playerPointsAway.getMin(), playerPointsAway.getMean(), playerPointsAway.getMax(), playerPointsAway.getLastValue(),
-            teamPointsAway.getMin(), teamPointsAway.getMean(), teamPointsAway.getMax(), teamPointsAway.getLastValue(),
-            gamePointsAway.getMin(), gamePointsAway.getMean(), gamePointsAway.getMax(), gamePointsAway.getLastValue());
+            setsPlayed, setsPlayedPct, pointsPerSet, playerPoints, teamPoints, gamePoints, totalPoints,
+            "H", pointsPerSetHome, playerPointsHome, teamPointsHome, gamePointsHome,
+            "A", pointsPerSetAway, playerPointsAway, teamPointsAway, gamePointsAway);
   }
 
 }
