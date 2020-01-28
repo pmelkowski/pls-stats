@@ -61,17 +61,10 @@ public class PlpsPlayerGameParser implements JsoupParser<PlayerGame> {
     playerGame.setSets(setsPlayed);
 
     getInteger(columns.get(8)).ifPresent(playerGame::setAces);
+    getInteger(columns.get(11)).ifPresent(playerGame::setRecNumber);
+    getFloat(columns.get(15)).map(Math::round).ifPresent(playerGame::setRecPct);
     getInteger(columns.get(21)).ifPresent(playerGame::setPoints);
     getInteger(columns.get(23)).ifPresent(playerGame::setBlocks);
-
-    getInteger(columns.get(11)).ifPresent(recTotal -> {
-      playerGame.setRecNumber(recTotal);
-      if (recTotal > 0) {
-        float recPositivePct = getFloat(columns.get(15)).orElse(0f);
-        float recPerfectPct = getFloat(columns.get(17)).orElse(0f);
-        playerGame.setRecPct(Math.round(recPositivePct + recPerfectPct));
-      }
-    });
 
     return playerGame;
   }
