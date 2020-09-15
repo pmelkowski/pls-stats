@@ -11,6 +11,7 @@ import pl.plusliga.parser.JsoupParser;
 
 public class PlpsPlayerGameParser implements JsoupParser<PlayerGame> {
   protected static Pattern PLAYER_ID_PATTERN = Pattern.compile(".*/players/id/(\\d+)/.*");
+  protected static Pattern PCT_PATTERN = Pattern.compile("(-?\\d+)%");
 
   private final Integer gameId;
 
@@ -60,10 +61,10 @@ public class PlpsPlayerGameParser implements JsoupParser<PlayerGame> {
     }
     playerGame.setSets(setsPlayed);
 
-    getInteger(columns.get(8)).ifPresent(playerGame::setAces);
-    getInteger(columns.get(11)).ifPresent(playerGame::setRecNumber);
-    getFloat(columns.get(15)).map(Math::round).ifPresent(playerGame::setRecPct);
-    getInteger(columns.get(21)).ifPresent(playerGame::setPoints);
+    getInteger(columns.get(11)).ifPresent(playerGame::setAces);
+    getInteger(columns.get(13)).ifPresent(playerGame::setRecNumber);
+    getInteger(columns.get(15).text(), PCT_PATTERN, 1).ifPresent(playerGame::setRecPct);
+    getInteger(columns.get(20)).ifPresent(playerGame::setPoints);
     getInteger(columns.get(23)).ifPresent(playerGame::setBlocks);
 
     return playerGame;

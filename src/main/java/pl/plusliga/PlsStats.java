@@ -101,8 +101,8 @@ public class PlsStats {
   @Transactional
   protected void updateGames(League league) {
     games.saveAll(ParserFactory.getParser(league, Game.class).getEntities(league.getGamesUrl()));
-    ParserFactory.getCupGameParser(league, teams.findAll())
-        .ifPresent(parser -> games.saveAll(parser.getEntities(league.getCupGamesUrl())));
+    //ParserFactory.getCupGameParser(league, teams.findAll())
+    //    .ifPresent(parser -> games.saveAll(parser.getEntities(league.getCupGamesUrl())));
     //ParserFactory.getSuperCupGameParser(league, leagueTeams)
     //    .ifPresent(parser -> games.saveAll(parser.getEntities(league.getSuperCupGameUrl())));
   }

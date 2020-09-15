@@ -222,11 +222,11 @@ public class PlayerStatistics {
   @Override
   public String toString() {
     return String.format(
-        "%-25s %-35s"
+        "%-32s %-35s"
             + " %2d/%-2d %6.2f%% %6.2f%% %6.2f%% %6.2f%%"
             + "   %s   %s    %s   %s   %s   %s   %-4d\n"
-            + "%149s %s   %s   %s   %s\n"
-            + "%149s %s   %s   %s   %s",
+            + "%156s %s   %s   %s   %s\n"
+            + "%156s %s   %s   %s   %s",
             player.getName(), player.getTeam().getName(),
             setsPlayed.getCount(), inTeam.getCount(), inTeam.getMean(), played.getMean(), primary.getMean(), secondary.getMean(),
             setsPlayed, setsPlayedPct, pointsPerSet, playerPoints, teamPoints, gamePoints, totalPoints,
